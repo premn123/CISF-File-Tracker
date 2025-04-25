@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - CISF File Tracker</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h1>CISF File Tracker Dashboard</h1>
+    <label for="section-filter"><strong>Filter by Section:</strong></label>
+<select id="section-filter">
+  <option value="all">All</option>
+  <option value="DIG PA">DIG PA</option>
+  <option value="COMDT PA">COMDT PA</option>
+  <option value="PTB Office">PTB Office</option>
+  <option value="Company GO's">Company GO's</option>
+  <option value="AC Admin">AC Admin</option>
+  <option value="Discipline">Discipline</option>
+  <option value="ADM Section">ADM Section</option>
+  <option value="Confidential">Confidential</option>
+  <option value="DOC Section">DOC Section</option>
+  <option value="Account section">Account Section</option>
+  <option value="Dispatch">Dispatch</option>
+  <option value="TA/DA Section">TA/DA Section</option>
+  <!-- Add more sections as needed -->
+</select>
+
+    <div class="form-section">
+      <h2>Submit File Movement</h2>
+      <input type="text" id="file-name" placeholder="File Name" required>
+      <input type="text" id="from-section" placeholder="From Section" required>
+      <input type="text" id="to-section" placeholder="To Section" required>
+      <textarea id="remarks" placeholder="Remarks (optional)"></textarea>
+      <button onclick="submitFileEntry()">Submit</button>
+    </div>
+
+    <div class="list-section">
+      <h2>File Movements</h2>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>File Name</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="movement-table-body"></tbody>
+      </table>
+      
+      <h2 style="margin-top: 40px;">Pending Files (24+ hrs)</h2>
+      <ul id="pending-files"></ul>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

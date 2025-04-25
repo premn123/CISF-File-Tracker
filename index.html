@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CISF File Tracker - Login</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>CISF File Tracker</h1>
+
+    <!-- Login Form -->
+    <div id="login-section">
+      <h2>Login</h2>
+      <input type="email" id="login-email" placeholder="Email" />
+      <input type="password" id="login-password" placeholder="Password" />
+      <button onclick="loginUser()">Login</button>
+      <p>Don't have an account? <a href="#" onclick="toggleSignup()">Sign Up</a></p>
+    </div>
+
+    <!-- Signup Form -->
+    <div id="signup-section" style="display: none;">
+      <h2>Sign Up</h2>
+      <input type="text" id="signup-cisfno" placeholder="CISF No." />
+      <input type="text" id="signup-rank" placeholder="Rank" />
+      <input type="text" id="signup-name" placeholder="Name" />
+      <input type="email" id="signup-email" placeholder="Email" />
+      <input type="password" id="signup-password" placeholder="Password" />
+      <input type="password" id="signup-confirm" placeholder="Confirm Password" />
+      <button onclick="signupUser()">Create Account</button>
+      <p>Already have an account? <a href="#" onclick="toggleLogin()">Login</a></p>
+    </div>
+  </div>
+
+  <script src="auth.js" type="module"></script>
+</body>
+</html>
