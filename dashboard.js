@@ -1,4 +1,5 @@
-// Firebase Config (same as before)
+
+// Firebase Config
 var firebaseConfig = {
   apiKey: "AIzaSyAkP9unnCHDUGusBR7RCBanI8olWNh7rEg",
   authDomain: "cisf-file-tracker.firebaseapp.com",
@@ -12,44 +13,8 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// On Page Load - Fetch File Entries
-window.onload = function () {
-  const sectionFilter = document.getElementById("section-filter");
-  const now = new Date();
-
-  db.collection("file_movements").orderBy("timestamp", "desc")
-    .onSnapshot((snapshot) => {
-      const fileList = document.getElementById("file-list");
-      const pendingList = document.getElementById("pending-files");
-
-      fileList.innerHTML = "";
-      pendingList.innerHTML = "";
-
-      const selectedSection = sectionFilter.value;
-
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const time = new Date(data.timestamp?.seconds * 1000);
-
-        // Filter by selected section
-        if (selectedSection === "all" || data.to === selectedSection || data.from === selectedSection) {
-          const li = document.createElement("li");
-          li.textContent = `File: ${data.fileName}, From: ${data.from}, To: ${data.to}, Time: ${time.toLocaleString()}`;
-          fileList.appendChild(li);
-
-          if ((now - time) > 86400000) {
-            const pendingLi = document.createElement("li");
-            pendingLi.style.color = "red";
-            pendingLi.textContent = `PENDING - File: ${data.fileName} (From: ${data.from} to ${data.to}) since ${time.toLocaleString()}`;
-            pendingList.appendChild(pendingLi);
-          }
-        }
-      });
-    });
-
-  // Trigger snapshot update on dropdown change
-  sectionFilter.addEventListener("change", () => window.onload());
-};
+let currentSnapshot = null;
+let selectedSection = "all";
 
 // Submit File Entry
 function submitFileEntry() {
@@ -81,7 +46,7 @@ function submitFileEntry() {
   });
 }
 
-// Function to mark file as signed
+// Mark file as signed
 function markSigned(docId) {
   db.collection("file_movements").doc(docId).update({
     status: "signed"
@@ -92,64 +57,55 @@ function markSigned(docId) {
   });
 }
 
-// Display file movement table
+// Render movement table
 function renderMovementTable(snapshot) {
   const tableBody = document.getElementById("movement-table-body");
+  const pendingList = document.getElementById("pending-files");
+  const now = new Date();
+
   tableBody.innerHTML = "";
+  pendingList.innerHTML = "";
 
   snapshot.forEach(doc => {
     const data = doc.data();
     const time = new Date(data.timestamp?.seconds * 1000);
-    const row = document.createElement("tr");
 
-    row.innerHTML = `
-      <td>${data.fileName}</td>
-      <td>${data.from}</td>
-      <td>${data.to}</td>
-      <td>${time.toLocaleString()}</td>
-      <td style="color: ${data.status === 'signed' ? 'green' : 'red'}">${data.status}</td>
-      <td>${data.status === 'pending' ? `<button onclick="markSigned('${doc.id}')">Mark as Signed</button>` : '—'}</td>
-    `;
-    tableBody.appendChild(row);
+    if (selectedSection === "all" || data.to === selectedSection || data.from === selectedSection) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${data.fileName}</td>
+        <td>${data.from}</td>
+        <td>${data.to}</td>
+        <td>${time.toLocaleString()}</td>
+        <td style="color: ${data.status === 'signed' ? 'green' : 'red'}">${data.status}</td>
+        <td>${data.status === 'pending' ? `<button onclick="markSigned('${doc.id}')">Mark as Signed</button>` : '—'}</td>
+      `;
+      tableBody.appendChild(row);
+
+      if ((now - time) > 86400000 && data.status === "pending") {
+        const pendingLi = document.createElement("li");
+        pendingLi.style.color = "red";
+        pendingLi.textContent = `PENDING - File: ${data.fileName} (From: ${data.from} to ${data.to}) since ${time.toLocaleString()}`;
+        pendingList.appendChild(pendingLi);
+      }
+    }
   });
 }
 
-// Load movement table on startup
+// Initialize page and fetch data
 window.onload = function () {
   const sectionFilter = document.getElementById("section-filter");
-  const now = new Date();
 
   db.collection("file_movements").orderBy("timestamp", "desc")
     .onSnapshot((snapshot) => {
+      currentSnapshot = snapshot;
       renderMovementTable(snapshot);
-      const fileList = document.getElementById("file-list");
-      const pendingList = document.getElementById("pending-files");
-
-      fileList.innerHTML = "";
-      pendingList.innerHTML = "";
-
-      const selectedSection = sectionFilter.value;
-
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const time = new Date(data.timestamp?.seconds * 1000);
-
-        // Filter by selected section
-        if (selectedSection === "all" || data.to === selectedSection || data.from === selectedSection) {
-          const li = document.createElement("li");
-          li.textContent = `File: ${data.fileName}, From: ${data.from}, To: ${data.to}, Time: ${time.toLocaleString()}`;
-          fileList.appendChild(li);
-
-          if ((now - time) > 86400000 && data.status === "pending") {
-            const pendingLi = document.createElement("li");
-            pendingLi.style.color = "red";
-            pendingLi.textContent = `PENDING - File: ${data.fileName} (From: ${data.from} to ${data.to}) since ${time.toLocaleString()}`;
-            pendingList.appendChild(pendingLi);
-          }
-        }
-      });
     });
 
-  // Trigger snapshot update on dropdown change
-  sectionFilter.addEventListener("change", () => window.onload());
+  sectionFilter.addEventListener("change", () => {
+    selectedSection = sectionFilter.value;
+    if (currentSnapshot) {
+      renderMovementTable(currentSnapshot);
+    }
+  });
 };
