@@ -36,11 +36,12 @@ window.signupUser = async () => {
   const email = document.getElementById("signup-email").value;
   const password = document.getElementById("signup-password").value;
   const confirm = document.getElementById("signup-confirm").value;
+  const role = document.getElementById("signup-role").value;
 
-  if (!cisfNo || !rank || !name || !email || !password || !confirm) {
+  if (!cisfNo || !rank || !name || !email || !password || !confirm || !role) {
     alert("Please fill in all fields.");
     return;
-  }
+  }  
 
   if (password !== confirm) {
     alert("Passwords do not match.");
@@ -55,8 +56,10 @@ window.signupUser = async () => {
       cisfNo,
       rank,
       name,
-      email
+      email,
+      role: role
     });
+    
 
     alert("Signup successful!");
     // ⬇️ Show login form

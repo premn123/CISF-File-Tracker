@@ -28,6 +28,11 @@
       <input type="email" id="signup-email" placeholder="Email" />
       <input type="password" id="signup-password" placeholder="Password" />
       <input type="password" id="signup-confirm" placeholder="Confirm Password" />
+      <select id="signup-role" required>
+        <option value="">Select Role</option>
+        <option value="clerk">Clerk</option>
+        <option value="officer">Officer</option>
+      </select>      
       <button onclick="signupUser()">Create Account</button>
       <p>Already have an account? <a href="#" onclick="toggleLogin()">Login</a></p>
     </div>

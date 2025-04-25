@@ -10,9 +10,9 @@ var firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+let currentUserRoll = "";
 const auth = firebase.auth();
 const db = firebase.firestore();
-
 let currentSnapshot = null;
 let selectedSection = "all";
 
@@ -78,7 +78,12 @@ function renderMovementTable(snapshot) {
         <td>${data.to}</td>
         <td>${time.toLocaleString()}</td>
         <td style="color: ${data.status === 'signed' ? 'green' : 'red'}">${data.status}</td>
-        <td>${data.status === 'pending' ? `<button onclick="markSigned('${doc.id}')">Mark as Signed</button>` : '—'}</td>
+        <td>${
+  data.status === 'pending' && currentUserRole === 'officer'
+    ? `<button onclick="markSigned('${doc.id}')">Mark as Signed</button>`
+    : '—'
+}</td>
+
       `;
       tableBody.appendChild(row);
 
@@ -94,6 +99,19 @@ function renderMovementTable(snapshot) {
 
 // Initialize page and fetch data
 window.onload = function () {
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      db.collection("users").doc(user.uid).get().then(doc => {
+        if (doc.exists) {
+          currentUserRole = doc.data().role;
+          console.log("Logged-in Role:", currentUserRole);
+          startDashboard();  // Start loading data after role is fetched
+        }
+      });
+    }
+  });
+};
+function startDashboard() {
   const sectionFilter = document.getElementById("section-filter");
 
   db.collection("file_movements").orderBy("timestamp", "desc")
@@ -108,4 +126,5 @@ window.onload = function () {
       renderMovementTable(currentSnapshot);
     }
   });
-};
+}
+
