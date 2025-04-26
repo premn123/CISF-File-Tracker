@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 // Firebase config
@@ -39,36 +39,36 @@ window.signupUser = async () => {
   const role = document.getElementById("signup-role").value;
 
   if (!cisfNo || !rank || !name || !email || !password || !confirm || !role) {
-    alert("Please fill in all fields.");
+    Swal.fire("Please fill in all fields.");
     return;
-  }  
+  }
 
   if (password !== confirm) {
-    alert("Passwords do not match.");
+    Swal.fire("Passwords do not match.");
     return;
   }
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const userId = userCredential.user.uid;
+    const user = userCredential.user;
 
-    await setDoc(doc(db, "users", userId), {
-      cisfNo,
-      rank,
-      name,
-      email,
-      role: role
+    // Send email verification link
+    await sendEmailVerification(user);
+
+    Swal.fire("Verification link sent to your email. Please verify to complete signup.");
+
+    // Save data temporarily in Firestore (optional)
+    await setDoc(doc(db, "users", user.uid), {
+      cisfNo, rank, name, email, role, verified: false
     });
-    
 
-    alert("Signup successful!");
-    // ⬇️ Show login form
     document.getElementById("signup-section").style.display = "none";
     document.getElementById("login-section").style.display = "block";
   } catch (error) {
-    alert("Signup Error: " + error.message);
+    Swal.fire("Signup Error: " + error.message);
   }
 };
+
 
 // Login function
 window.loginUser = async () => {
@@ -76,15 +76,32 @@ window.loginUser = async () => {
   const password = document.getElementById("login-password").value;
 
   if (!email || !password) {
-    alert("Please enter email and password.");
+    Swal.fire("Please enter email and password.");
     return;
   }
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
-    alert("Login successful!");
-    window.location.href = "dashboard.html";
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    if (!user.emailVerified) {
+      Swal.fire("Please verify your email before login.");
+      return;
+    }
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Login Successful',
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 1500);
+
   } catch (error) {
-    alert("Login Error: " + error.message);
+    Swal.fire("Login Error: " + error.message);
   }
 };
+
